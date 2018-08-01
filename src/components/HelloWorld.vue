@@ -2,7 +2,10 @@
   <div class="hello">
     <!-- 搜索框 -->
     <mu-container>
-      <mu-text-field v-model="inputValue" placeholder="搜索音乐"></mu-text-field><br/>
+      <mu-text-field v-model="inputValue" placeholder="搜索音乐"></mu-text-field>
+    </mu-container>
+    <mu-container class="button-wrapper">
+      <mu-button full-width color="warning" @click="searchClick()">SEARCH</mu-button>
     </mu-container>
     <!-- 错误弹窗 -->
     <!-- <mu-alert color="error" delete v-if="getMusicListErr" @delete="closeAlert()">
@@ -21,7 +24,7 @@
           </mu-list-item-action>
           <mu-list-item-content @click="muscicItmeClick(musicItem.id)">
             <mu-list-item-title>{{musicItem.name}}</mu-list-item-title>
-            <mu-list-item-sub-title>{{musicItem.ar[0].name}}</mu-list-item-sub-title>
+            <mu-list-item-sub-title>{{musicItem.artists[0].name}}</mu-list-item-sub-title>
           </mu-list-item-content>
           <mu-list-item-action>
             <mu-button icon>
@@ -45,7 +48,8 @@ export default {
       musicList: [],
       inputValue: "",
       getMusicListErr: "",
-      musicUrl: ""
+      musicUrl: "",
+      searchData: ""
     };
   },
   created() {
@@ -64,18 +68,29 @@ export default {
           }, 200);
         })
         .catch(err => (this.getMusicListErr = "获取错误"));
+    },
+    searchClick() {
+      this.$http
+        .get(`https://enigmatic-shore-63070.herokuapp.com/search?keywords=${this.searchData}`)
+        .then(data => {
+          this.musicList = data.data.result.songs;
+          console.log(data)
+        })
+        .catch(err => (this.getMusicListErr = "获取错误"));
     }
   },
   watch: {
     inputValue(val, oldVal) {
+      this.searchData = val;
       if (val === "") this.musicList = [];
       if (val) {
-        this.$http
-          .get(`https://api.imjad.cn/cloudmusic/?type=search&s=${val}`)
-          .then(data => {
-            this.musicList = data.data.result.songs;
-          })
-          .catch(err => (this.getMusicListErr = "获取错误"));
+      this.$http
+        .get(`https://enigmatic-shore-63070.herokuapp.com/search?keywords=${this.searchData}`)
+        .then(data => {
+          this.musicList = data.data.result.songs;
+          console.log(data)
+        })
+        .catch(err => (this.getMusicListErr = "获取错误"));
       }
     }
   }
