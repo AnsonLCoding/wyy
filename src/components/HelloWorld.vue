@@ -1,41 +1,85 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank">babel</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank">awesome-vue</a></li>
-    </ul>
+    <!-- 搜索框 -->
+    <mu-container>
+      <mu-text-field v-model="inputValue" placeholder="搜索音乐"></mu-text-field><br/>
+    </mu-container>
+    <!-- 错误弹窗 -->
+    <mu-alert color="error" delete v-if="getMusicListErr" @delete="closeAlert()">
+      <mu-icon left value="warning"></mu-icon> {{getMusicListErr}}
+    </mu-alert>
+    <!-- 音乐播放 -->
+    <audio id="music_play" :src="musicUrl" style="display:none;"></audio>
+    <!-- 音乐展示列表 -->
+    <mu-paper :z-depth="1" class="demo-list-wrap">
+      <mu-list textline="two-line">
+        <mu-list-item avatar button :ripple="false" v-for="(musicItem,index) in musicList" :key="index" class="border_bottom">
+          <mu-list-item-action>
+            <mu-avatar color="yellow600">
+              <mu-icon value="music_note"></mu-icon>
+            </mu-avatar>
+          </mu-list-item-action>
+          <mu-list-item-content @click="muscicItmeClick(musicItem.id)">
+            <mu-list-item-title>{{musicItem.name}}</mu-list-item-title>
+            <mu-list-item-sub-title>{{musicItem.ar[0].name}}</mu-list-item-sub-title>
+          </mu-list-item-content>
+          <mu-list-item-action>
+            <mu-button icon>
+              <mu-icon value="info"></mu-icon>
+            </mu-button>
+          </mu-list-item-action>
+        </mu-list-item>
+      </mu-list>
+    </mu-paper>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'HelloWorld',
+  name: "HelloWorld",
   props: {
     msg: String
+  },
+  data() {
+    return {
+      musicList: [],
+      inputValue: "",
+      getMusicListErr: "",
+      musicUrl: ""
+    };
+  },
+  created() {
+    console.log("app is created!");
+  },
+  methods: {
+    muscicItmeClick(id) {
+      this.$http
+        .get(`https://api.imjad.cn/cloudmusic/?type=song&id=${id}&br=128000`)
+        .then(data => {
+          console.log(data.data.data[0].url);
+          this.musicUrl = data.data.data[0].url;
+          let musicPlay = document.querySelector("#music_play");
+          setTimeout(() => {
+            musicPlay.play();
+          }, 200);
+        })
+        .catch(err => (this.getMusicListErr = "获取错误"));
+    }
+  },
+  watch: {
+    inputValue(val, oldVal) {
+      if (val === "") this.musicList = [];
+      if (val) {
+        this.$http
+          .get(`https://api.imjad.cn/cloudmusic/?type=search&s=${val}`)
+          .then(data => {
+            this.musicList = data.data.result.songs;
+          })
+          .catch(err => (this.getMusicListErr = "获取错误"));
+      }
+    }
   }
-}
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -53,5 +97,19 @@ li {
 }
 a {
   color: #42b983;
+}
+.mu-list {
+  margin: 0 auto;
+  text-align: center;
+}
+.border_bottom {
+  border-bottom: 1px solid rgb(224, 224, 224);
+}
+.mu-list-item-title {
+  font-size: 12px;
+}
+.mu-alert {
+  position: fixed;
+  top: 50%;
 }
 </style>
