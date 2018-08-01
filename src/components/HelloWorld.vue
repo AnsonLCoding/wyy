@@ -5,9 +5,9 @@
       <mu-text-field v-model="inputValue" placeholder="搜索音乐"></mu-text-field><br/>
     </mu-container>
     <!-- 错误弹窗 -->
-    <mu-alert color="error" delete v-if="getMusicListErr" @delete="closeAlert()">
+    <!-- <mu-alert color="error" delete v-if="getMusicListErr" @delete="closeAlert()">
       <mu-icon left value="warning"></mu-icon> {{getMusicListErr}}
-    </mu-alert>
+    </mu-alert> -->
     <!-- 音乐播放 -->
     <audio id="music_play" :src="musicUrl" style="display:none;"></audio>
     <!-- 音乐展示列表 -->
