@@ -11,7 +11,7 @@
     <!-- 音乐播放 -->
     <audio id="music_play" :src="musicUrl" style="display:none;"></audio>
     <!-- 音乐展示列表 -->
-    <mu-paper :z-depth="1" class="demo-list-wrap">
+    <mu-paper :z-depth="1" class="list-wrap">
       <mu-list textline="two-line">
         <mu-list-item avatar button :ripple="false" v-for="(musicItem,index) in musicList" :key="index" class="border_bottom">
           <mu-list-item-action>
@@ -91,15 +91,11 @@ ul {
   list-style-type: none;
   padding: 0;
 }
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
 a {
   color: #42b983;
 }
 .mu-list {
-  margin: 0 auto;
+  width: 100%;
   text-align: center;
 }
 .border_bottom {
