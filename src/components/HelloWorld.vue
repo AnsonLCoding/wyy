@@ -1,18 +1,16 @@
 <template>
-  <div class="hello">
+  <div class="music">
     <!-- 搜索框 -->
     <mu-container>
-      <mu-text-field v-model="inputValue" placeholder="搜索音乐"></mu-text-field>
+      <mu-text-field class="input" v-model="inputValue" placeholder="搜索音乐" color="yellow600" underline-color="yellow600"></mu-text-field>
+      <!-- <mu-button full-width color="warning" @click="searchClick()">SEARCH</mu-button> -->
     </mu-container>
-    <mu-container class="button-wrapper">
-      <mu-button full-width color="warning" @click="searchClick()">SEARCH</mu-button>
-    </mu-container>
+      
     <!-- 错误弹窗 -->
     <!-- <mu-alert color="error" delete v-if="getMusicListErr" @delete="closeAlert()">
       <mu-icon left value="warning"></mu-icon> {{getMusicListErr}}
     </mu-alert> -->
-    <!-- 音乐播放 -->
-    <audio id="music_play" :src="musicUrl" style="display:none;"></audio>
+  
     <!-- 音乐展示列表 -->
     <mu-paper :z-depth="1" class="list-wrap">
       <mu-list textline="two-line">
@@ -22,7 +20,7 @@
               <mu-icon value="music_note"></mu-icon>
             </mu-avatar>
           </mu-list-item-action>
-          <mu-list-item-content @click="muscicItmeClick(musicItem.id)">
+          <mu-list-item-content @click="muscicItmeClick(musicItem)">
             <mu-list-item-title>{{musicItem.name}}</mu-list-item-title>
             <mu-list-item-sub-title>{{musicItem.artists[0].name}}</mu-list-item-sub-title>
           </mu-list-item-content>
@@ -38,6 +36,8 @@
 </template>
 
 <script>
+import { mapMutations } from "vuex";
+
 export default {
   name: "HelloWorld",
   props: {
@@ -48,7 +48,6 @@ export default {
       musicList: [],
       inputValue: "",
       getMusicListErr: "",
-      musicUrl: "",
       searchData: ""
     };
   },
@@ -56,25 +55,30 @@ export default {
     console.log("app is created!");
   },
   methods: {
-    muscicItmeClick(id) {
+    ...mapMutations(["setMusicData"]),
+    muscicItmeClick(data_m) {
       this.$http
-        .get(`https://api.imjad.cn/cloudmusic/?type=song&id=${id}&br=128000`)
+        .get(
+          `https://api.imjad.cn/cloudmusic/?type=song&id=${data_m.id}&br=128000`
+        )
         .then(data => {
-          console.log(data.data.data[0].url);
-          this.musicUrl = data.data.data[0].url;
-          let musicPlay = document.querySelector("#music_play");
-          setTimeout(() => {
-            musicPlay.play();
-          }, 200);
+          this.setMusicData({
+            url: data.data.data[0].url,
+            name: data_m.name,
+            artName:`(${data_m.artists[0].name})`
+          });
         })
         .catch(err => (this.getMusicListErr = "获取错误"));
     },
     searchClick() {
       this.$http
-        .get(`https://enigmatic-shore-63070.herokuapp.com/search?keywords=${this.searchData}`)
+        .get(
+          `https://enigmatic-shore-63070.herokuapp.com/search?keywords=${
+            this.searchData
+          }`
+        )
         .then(data => {
           this.musicList = data.data.result.songs;
-          console.log(data)
         })
         .catch(err => (this.getMusicListErr = "获取错误"));
     }
@@ -84,13 +88,17 @@ export default {
       this.searchData = val;
       if (val === "") this.musicList = [];
       if (val) {
-      this.$http
-        .get(`https://enigmatic-shore-63070.herokuapp.com/search?keywords=${this.searchData}`)
-        .then(data => {
-          this.musicList = data.data.result.songs;
-          console.log(data)
-        })
-        .catch(err => (this.getMusicListErr = "获取错误"));
+        this.$http
+          .get(
+            `https://enigmatic-shore-63070.herokuapp.com/search?keywords=${
+              this.searchData
+            }`
+          )
+          .then(data => {
+            this.musicList = data.data.result.songs;
+            console.log(data);
+          })
+          .catch(err => (this.getMusicListErr = "获取错误"));
       }
     }
   }
@@ -109,9 +117,15 @@ ul {
 a {
   color: #42b983;
 }
+.music{
+  font-size: 0.1rem;
+}
 .mu-list {
   width: 100%;
   text-align: center;
+}
+.input{
+  margin-top: 20px;
 }
 .border_bottom {
   border-bottom: 1px solid rgb(224, 224, 224);
